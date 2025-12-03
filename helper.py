@@ -7,6 +7,9 @@ from collections import defaultdict
 import math  
 import ast
 from collections.abc import Iterable
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import numpy as np
 
 
 def plot_missing_values(datasets):
@@ -39,13 +42,26 @@ def plot_missing_values(datasets):
 
 
 def replace_titles_with_ids(df, column, genres_id):
+    """
+    This is a function that takes a colomn where features are titles 
+    and replace them with their corresponding ids from the genres_id
+    """
     title_to_id = dict(zip(genres_id['genre_title'], genres_id['genre_id']))
     df[column] = df[column].map(title_to_id)
     return df
 
 def replace_ids_with_titles(df, column, genres_id):
     id_to_title = dict(zip(genres_id['genre_id'], genres_id['genre_title']))
-    df[column] = df[column].map(id_to_title)
+    df = df.copy()
+
+    def map_ids(x):
+        # treat iterables (lists, tuples, sets, etc.) as collections of ids
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            return [id_to_title.get(i) for i in x]
+        # treat scalars (single id) as one id
+        return id_to_title.get(x, x)
+
+    df[column] = df[column].apply(map_ids)
     return df
 
 def build_genre_hierarchy(genres):
@@ -92,3 +108,88 @@ def build_genre_hierarchy(genres):
 
     return parent_to_children, mapped_parent_to_children, id_to_title, root_ids, root_titles
 
+def fill_top_genre(df, parent_genre_map):
+    import random
+    df = df.copy()
+
+    # Identify root genres (parent = itself)
+    # root_genres = [gid for gid, root in parent_genre_map.items() if gid == root]
+
+    for idx, row in df.iterrows():
+
+        # Ad a treatment for rows where the genre_top is not na
+        # we make sure they refer to the root parent and not the child
+        if not pd.isna(row['genre_top']):
+            gid = row['genre_top']
+            root_parent = parent_genre_map.get(gid, gid)
+            df.at[idx, 'genre_top'] = root_parent
+            continue
+
+        # Only fill missing values
+        if pd.isna(row['genre_top']):
+            # STEP 1: Dominant parent in genres
+            genre_counts = {}
+            if isinstance(row['genres'], list):
+                for gid in row['genres']:
+                    parent = parent_genre_map.get(gid)
+                    if parent is not None:
+                        genre_counts[parent] = genre_counts.get(parent, 0) + 1
+
+            if genre_counts:
+                df.at[idx, 'genre_top'] = max(genre_counts, key=genre_counts.get)
+                continue
+
+            # STEP 2: Dominant parent in genres_all
+            genre_all_counts = {}
+            if isinstance(row['genres_all'], list):
+                for gid in row['genres_all']:
+                    parent = parent_genre_map.get(gid)
+                    if parent is not None:
+                        genre_all_counts[parent] = genre_all_counts.get(parent, 0) + 1
+
+            if genre_all_counts:
+                df.at[idx, 'genre_top'] = max(genre_all_counts, key=genre_all_counts.get)
+                continue
+
+            # STEP 3: Use first available genre (genres, then genres_all)
+            genres_list = row['genres'] if isinstance(row['genres'], list) else []
+            genres_all_list = row['genres_all'] if isinstance(row['genres_all'], list) else []
+
+            # If both empty: drop row
+            if len(genres_list) == 0 and len(genres_all_list) == 0:
+                df = df.drop(index=idx)
+                continue
+
+            # Else pick first valid gid
+            if len(genres_list) > 0:
+                first_gid = genres_list[0]
+            else:
+                first_gid = genres_all_list[0]
+
+            root_parent = parent_genre_map.get(first_gid, first_gid)
+            df.at[idx, 'genre_top'] = root_parent
+
+    return df
+
+def pca_group(df, cols, name):
+    Xg = df[cols].dropna()
+    scaler = StandardScaler()
+    Xg_scaled = scaler.fit_transform(Xg)
+
+    pca = PCA()           # toutes les composantes
+    pca.fit(Xg_scaled)
+
+    cum_var = np.cumsum(pca.explained_variance_ratio_)
+    print(f"\nGroupe {name} ({len(cols)} variables)")
+    print("Variance expliquée par composante :", pca.explained_variance_ratio_)
+    print("Variance cumulée :", cum_var)
+
+def make_pcs(df, cols, n_comp, prefix):
+    Xg = df[cols].dropna()
+    scaler = StandardScaler()
+    Xg_scaled = scaler.fit_transform(Xg)
+    pca = PCA(n_components=n_comp)
+    Z = pca.fit_transform(Xg_scaled)
+    for j in range(n_comp):
+        df.loc[Xg.index, f'{prefix}_pc{j+1}'] = Z[:, j]
+    return df
