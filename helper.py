@@ -43,9 +43,24 @@ def replace_titles_with_ids(df, column, genres_id):
     df[column] = df[column].map(title_to_id)
     return df
 
+# def replace_ids_with_titles(df, column, genres_id):
+#     id_to_title = dict(zip(genres_id['genre_id'], genres_id['genre_title']))
+#     df[column] = df[column].map(id_to_title)
+#     return df
+
+# Extended versions to handle lists of ids/titles
 def replace_ids_with_titles(df, column, genres_id):
     id_to_title = dict(zip(genres_id['genre_id'], genres_id['genre_title']))
-    df[column] = df[column].map(id_to_title)
+    df = df.copy()
+
+    def map_ids(x):
+        # If it's a list/tuple/etc
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            return [id_to_title.get(i, i) for i in x]
+        # Scalar
+        return id_to_title.get(x, x)
+
+    df[column] = df[column].apply(map_ids)
     return df
 
 def build_genre_hierarchy(genres):
