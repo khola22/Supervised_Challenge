@@ -50,3 +50,25 @@ The processed and cleaned dataset has been saved as:
 ## Task 2: Predict your coarse-grained genre (3–4 categories) (task2.ipynb)
 
 ## Task 3: Predict the track duration (task3.ipynb)
+**Data Preparation**:  
+- Since we applied regression models in this part, we had to handle categorical columns so high cardinality columns (`artist_name`, `title`, `album_title`) were dropped.
+- **Target Transformation:** The target variable, `duration`, was handled for extreme outliers by **clipping** at 2000s and then **log-transformed** (`log(1+x)`) to achieve a near-normal distribution for regression stability.
+- **Final Feature Sets:** Two primary feature sets were used for modeling:
+    1.  **Set A (Large):** Metadata + Reduced Spectral Features ($\approx 100,000$ tracks).
+    2.  **Set C (Complete/Small):** Metadata + Reduced Spectral + **Echonest** features ($\approx 10,000$ tracks).
+
+**Regression models:**  
+The goal is to build the best regression model to predict the log-transformed track duration. We compare various models and feature sets using the $\mathbf{R^2}$ score and the $\mathbf{MAE}$ (Mean Absolute Error) converted back to seconds for interpretability.  
+
+| Model | Feature Set | Data Size (Tracks) | R² Score | MAE (Seconds) |
+| :--- | :--- | :--- | :--- | :--- |
+| KNN Regressor | Set A (Spectral) | $\approx 100,000$ | 0.1635 | 0.62 s |
+| **Random Forest** | **Set A (Spectral)** | $\approx 100,000$ | **0.3643** | **0.52 s** |
+| Random Forest | Set C (Complete) | $\approx 10,000$ | 0.3288 | 0.52 s |
+| Gradient Boosting | Set C (Complete) | $\approx 10,000$ | **0.3643** | **0.52 s** |
+
+The results indicate a strong **Quantity vs. Quality Trade-off** :
+
+* The **Random Forest** model achieves the best performance ($R^2=0.3643$) on the **largest dataset (Set A)**.
+* Adding the high-quality **Echonest features** (Set C) but losing $90\%$ of the data **neutralizes** the performance, resulting in the same $R^2$. The data quantity currently outweighs the feature quality.
+* The **Gradient Boosting Regressor** failed to extract additional signal compared to the Random Forest on the smaller dataset.
