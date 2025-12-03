@@ -93,72 +93,72 @@ def build_genre_hierarchy(genres):
     return parent_to_children, mapped_parent_to_children, id_to_title, root_ids, root_titles
 
 
-def fill_genre_top_from_genres(
-    tracks_df,
-    parent_map,
-    genres_col='genres',
-    genre_top_col='genre_top',
-):
-    """
-    tracks_df[genres_col]: each cell is a list of int ids, e.g. [21, 169]
-    parent_map: dict child_id (int) -> parent_id (int or float/NaN)
-    """
+# def fill_genre_top_from_genres(
+#     tracks_df,
+#     parent_map,
+#     genres_col='genres',
+#     genre_top_col='genre_top',
+# ):
+#     """
+#     tracks_df[genres_col]: each cell is a list of int ids, e.g. [21, 169]
+#     parent_map: dict child_id (int) -> parent_id (int or float/NaN)
+#     """
 
-    def to_iter(x):
-        if pd.isna(x):
-            return []
-        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
-            return list(x)
-        return [x]
+#     def to_iter(x):
+#         if pd.isna(x):
+#             return []
+#         if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+#             return list(x)
+#         return [x]
 
-    df = tracks_df.copy()
+#     df = tracks_df.copy()
 
-    missing_mask = df[genre_top_col].isna()
-    print(missing_mask.sum(), "rows with missing genre_top")
+#     missing_mask = df[genre_top_col].isna()
+#     print(missing_mask.sum(), "rows with missing genre_top")
 
-    genre_top_pos = df.columns.get_loc(genre_top_col)
+#     genre_top_pos = df.columns.get_loc(genre_top_col)
 
-    for idx in df[missing_mask].index:
-        cell = df.iloc[idx][genres_col]        # e.g. [21] or [10, 12]
-        items = to_iter(cell)                  # stays as list
+#     for idx in df[missing_mask].index:
+#         cell = df.iloc[idx][genres_col]        # e.g. [21] or [10, 12]
+#         items = to_iter(cell)                  # stays as list
 
-        parents = set()
-        for g in items:
-            if pd.isna(g):
-                continue
+#         parents = set()
+#         for g in items:
+#             if pd.isna(g):
+#                 continue
 
-            # make sure g is int (your list has ints already, but this is safe)
-            try:
-                g_int = int(g)
-            except Exception:
-                continue
+#             # make sure g is int (your list has ints already, but this is safe)
+#             try:
+#                 g_int = int(g)
+#             except Exception:
+#                 continue
 
-            parent = parent_map.get(g_int)
+#             parent = parent_map.get(g_int)
 
-            if parent is None or pd.isna(parent):
-                continue
+#             if parent is None or pd.isna(parent):
+#                 continue
 
-            # cast parent to int if it is a float like 21.0
-            try:
-                parent_int = int(parent)
-            except Exception:
-                continue
+#             # cast parent to int if it is a float like 21.0
+#             try:
+#                 parent_int = int(parent)
+#             except Exception:
+#                 continue
 
-            if parent_int == g_int:
-                # avoid self-parent
-                continue
+#             if parent_int == g_int:
+#                 # avoid self-parent
+#                 continue
 
-            parents.add(parent_int)
+#             parents.add(parent_int)
 
-        if not parents:
-            continue
+#         if not parents:
+#             continue
 
-        if len(parents) == 1:
-            value = next(iter(parents))    # single parent
-        else:
-            value = sorted(parents)        # multiple parents
+#         if len(parents) == 1:
+#             value = next(iter(parents))    # single parent
+#         else:
+#             value = sorted(parents)        # multiple parents
 
-        df.iloc[idx, genre_top_pos] = value
+#         df.iloc[idx, genre_top_pos] = value
 
-    return df
+#     return df
 
