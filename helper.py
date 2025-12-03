@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 from collections import defaultdict
 import math  
+import ast
+from collections.abc import Iterable
 
 
 def plot_missing_values(datasets):
@@ -45,9 +47,6 @@ def replace_ids_with_titles(df, column, genres_id):
     id_to_title = dict(zip(genres_id['genre_id'], genres_id['genre_title']))
     df[column] = df[column].map(id_to_title)
     return df
-
-from collections import defaultdict
-import math
 
 def build_genre_hierarchy(genres):
     """
@@ -92,3 +91,74 @@ def build_genre_hierarchy(genres):
         mapped_parent_to_children[parent_title] = child_titles
 
     return parent_to_children, mapped_parent_to_children, id_to_title, root_ids, root_titles
+
+
+def fill_genre_top_from_genres(
+    tracks_df,
+    parent_map,
+    genres_col='genres',
+    genre_top_col='genre_top',
+):
+    """
+    tracks_df[genres_col]: each cell is a list of int ids, e.g. [21, 169]
+    parent_map: dict child_id (int) -> parent_id (int or float/NaN)
+    """
+
+    def to_iter(x):
+        if pd.isna(x):
+            return []
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            return list(x)
+        return [x]
+
+    df = tracks_df.copy()
+
+    missing_mask = df[genre_top_col].isna()
+    print(missing_mask.sum(), "rows with missing genre_top")
+
+    genre_top_pos = df.columns.get_loc(genre_top_col)
+
+    for idx in df[missing_mask].index:
+        cell = df.iloc[idx][genres_col]        # e.g. [21] or [10, 12]
+        items = to_iter(cell)                  # stays as list
+
+        parents = set()
+        for g in items:
+            if pd.isna(g):
+                continue
+
+            # make sure g is int (your list has ints already, but this is safe)
+            try:
+                g_int = int(g)
+            except Exception:
+                continue
+
+            parent = parent_map.get(g_int)
+
+            if parent is None or pd.isna(parent):
+                continue
+
+            # cast parent to int if it is a float like 21.0
+            try:
+                parent_int = int(parent)
+            except Exception:
+                continue
+
+            if parent_int == g_int:
+                # avoid self-parent
+                continue
+
+            parents.add(parent_int)
+
+        if not parents:
+            continue
+
+        if len(parents) == 1:
+            value = next(iter(parents))    # single parent
+        else:
+            value = sorted(parents)        # multiple parents
+
+        df.iloc[idx, genre_top_pos] = value
+
+    return df
+

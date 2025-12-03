@@ -5,3 +5,7 @@ data/*
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+__pycache__/
