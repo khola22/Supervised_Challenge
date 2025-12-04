@@ -51,7 +51,11 @@ The processed and cleaned dataset has been saved as:
 - 80% of the dataset is dedicated to the training and 20% for the test (with the same class proportions).
 - Standardization of the features for the models that require it.
 - The training data is split to 5 folds with the same class distribution. In each iteration on fold becomes the validation set and the other four are used as a trining set.
-- 
+
+  **Résultats pour le dataset tracks_spectral**
+  <img width="729" height="299" alt="image" src="https://github.com/user-attachments/assets/76319ccc-35fc-4186-b228-21651645c58c" />
+
+  
 
 ## Task 2: Predict your coarse-grained genre (3–4 categories) (task2.ipynb)
 
