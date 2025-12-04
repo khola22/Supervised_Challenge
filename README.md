@@ -46,6 +46,12 @@ The processed and cleaned dataset has been saved as:
 - **File**: `data/tracks_spectral_reduced.csv`
 
 ## Task 1: Predict the original genre (genre_top) (task1.ipynb)
+- The supervised learning was performed on the numerical features of the dataset.
+- The target is encoded to insure it is compact.
+- 80% of the dataset is dedicated to the training and 20% for the test (with the same class proportions).
+- Standardization of the features for the models that require it.
+- The training data is split to 5 folds with the same class distribution. In each iteration on fold becomes the validation set and the other four are used as a trining set.
+- 
 
 ## Task 2: Predict your coarse-grained genre (3–4 categories) (task2.ipynb)
 
