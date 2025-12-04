@@ -53,7 +53,8 @@ The processed and cleaned dataset has been saved as:
 - Standardization of the features for the models that require it.
 - The training data is split to 5 folds with the same class distribution. In each iteration on fold becomes the validation set and the other four are used as a trining set.
 
-  **Results (tracks_spectral dataset)**
+  **Results-1 (tracks_spectral dataset)**
+  
   <img width="729" height="299" alt="image" src="https://github.com/user-attachments/assets/76319ccc-35fc-4186-b228-21651645c58c" />
 
 The best model is **LightGBM** with an accuracy of 58% and an overfitting value within an acceptable range.
@@ -78,7 +79,33 @@ All in all, there's a strong correlation between the percentage of the class in 
 
 We can also notice that the classes are confused the most with the dominant classes (11,7,5)
 The results are explained by the imbalanced data.
+<img width="257" height="292" alt="image" src="https://github.com/user-attachments/assets/c44236d8-1ac1-4313-934b-3ae372a0b783" />
 
+
+**Results-2 (tracks_spectral_echonest dataset)**
+we are going to work on the 3 datasets that provide more information (features) but less individuals.
+
+<img width="759" height="332" alt="image" src="https://github.com/user-attachments/assets/79cb862e-118e-4d6b-8997-5cc02bd24c81" />
+
+These results show a better accuracy but a higher overfitting.
+Again, LightGBM has the best validation accuracy (73%). Even though it has a high overfitting (26%), it still generalizes well.
+The difference between the previous results could be explained by the features that were added and that give the model more discriminative cues and more predictive power. Also the dataset is désormais less imbalanced than the data before : 
+<img width="274" height="260" alt="image" src="https://github.com/user-attachments/assets/77a7afad-0d54-47be-81ea-7603a09be2c5" />
+
+LightGBM is the model we're using for the final test (after the tuning).
+
+Below, the confusion matrix : 
+<img width="693" height="416" alt="image" src="https://github.com/user-attachments/assets/9da7d3f8-c9e3-47c6-8ee1-3aebf8ec18ad" />
+
+The results are way better (accuracy : 79% Vs 65% before)
+- The diagonal is dominant. Same, the dominant genres in the dataset are well predicted 5, 7 (55% of the dateset)
+- The other classes are well predicted, but when confused, they're mainly confused with 5 and 7 (the dominants)
+
+What I find pretty curious is that class 3 (originally 5 = classical ) is well predicted in results-1 and results-2:
+- Results-1 : 67% well predicted and represent only 1,89% of the data
+- Results-2 : 95% well predicted and represent only 2,91% of the data
+But as class 3 is not very present, very few other classes are mistaken for class 3.
+We can suppose that the feauture distribution of classical music (3) is very different from other classes. (A small class but easy to detect)
 
 ## Task 2: Predict your coarse-grained genre (3–4 categories) (task2.ipynb)
 
