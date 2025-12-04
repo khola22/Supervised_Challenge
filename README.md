@@ -69,11 +69,11 @@ Before the final test :
 
 - The diagonale is pretty dominant, which indicates a good class separation (65.44%)
 - The best predictes classes are :
-     - 11 (originally 38). 75% was well predicted
-     - 7  (originally 15). 74% was well predicted
-     - 5 (originally 12). 69% was well predicte
+     - 11 (originally 38 = Experimental). 75% was well predicted
+     - 7  (originally 15 = Electronic). 74% was well predicted
+     - 5 (originally 12 = Rock). 69% was well predicte
   This is explained by the fact that thes 3 classes represent over 67% of the dataset. The other 11 classes are a minority.
-The class 12 (763) was always mistaken for class 11 (38), and this is predictable as class 12 represents only 0,005% of the data.
+The class 12 (763 = Holiday) was always mistaken for class 11 (38), and this is predictable as class 12 represents only 0,005% of the data.
 All in all, there's a strong correlation between the percentage of the class in the data and the likelihood to predict it right.
 
 We can also notice that the classes are confused the most with the dominant classes (11,7,5)
