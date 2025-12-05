@@ -10,6 +10,7 @@ from collections.abc import Iterable
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import numpy as np
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 def plot_missing_values(datasets):
@@ -193,3 +194,17 @@ def make_pcs(df, cols, n_comp, prefix):
     for j in range(n_comp):
         df.loc[Xg.index, f'{prefix}_pc{j+1}'] = Z[:, j]
     return df
+
+def evaluate_model(model, X_test, Y_test):
+    
+    Y_pred = model.predict(X_test)
+
+    r2 = model.score(X_test, Y_test)
+    rmse_log = np.sqrt(mean_squared_error(Y_test, Y_pred))
+    mae_log = mean_absolute_error(Y_test, Y_pred)
+    mae_seconds = np.expm1(mae_log)
+
+    print(f"R² Score: {r2:.4f}")
+    print(f"RMSE (Log-Seconds): {rmse_log:.4f}")
+    print(f"MAE (Log-Seconds): {mae_log:.4f}")
+    print(f"MAE (Seconds): {mae_seconds:.2f} seconds\n")
