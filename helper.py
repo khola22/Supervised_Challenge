@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+import random
 
 
 def plot_missing_values(datasets):
@@ -110,7 +111,7 @@ def build_genre_hierarchy(genres):
     return parent_to_children, mapped_parent_to_children, id_to_title, root_ids, root_titles
 
 def fill_top_genre(df, parent_genre_map):
-    import random
+    
     df = df.copy()
 
     # Identify root genres (parent = itself)
@@ -199,12 +200,50 @@ def evaluate_model(model, X_test, Y_test):
     
     Y_pred = model.predict(X_test)
 
+    y_true_seconds = np.expm1(Y_test)
+    y_pred_seconds = np.expm1(Y_pred)
+
     r2 = model.score(X_test, Y_test)
     rmse_log = np.sqrt(mean_squared_error(Y_test, Y_pred))
     mae_log = mean_absolute_error(Y_test, Y_pred)
-    mae_seconds = np.expm1(mae_log)
+    mae_seconds_real = mean_absolute_error(y_true_seconds, y_pred_seconds)
 
     print(f"R² Score: {r2:.4f}")
     print(f"RMSE (Log-Seconds): {rmse_log:.4f}")
     print(f"MAE (Log-Seconds): {mae_log:.4f}")
-    print(f"MAE (Seconds): {mae_seconds:.2f} seconds\n")
+    print(f"MAE (Seconds): {mae_seconds_real:.2f} seconds")
+    
+def target_encode(train_df, test_df, target_series, col_name, m=10):
+    """
+    This function applies Target Encoding with Smoothing.
+    We smooth the encoding to avoid overfitting on categories with few samples.
+    """
+    # Calculate Global Mean (of the target)
+    global_mean = target_series.mean()
+
+    # Create a temporary dataframe for calculation
+    train = train_df.copy()
+    train['target'] = target_series
+
+    # Calculate Count and Mean for each category
+    count = train.groupby(col_name)['target'].agg(['count', 'mean'])
+
+    # Calculate Smoothed Score
+    # Formula: (n * mean + m * global_mean) / (n + m)
+    count['smoothed'] = (count['count'] * count['mean'] + m * global_mean) / (count['count'] + m)
+
+    # Create mapping dictionary
+    dict = count['smoothed'].to_dict()
+
+    # Map to Train and Test
+    train_df[col_name + '_encoded'] = train_df[col_name].map(dict)
+    test_df[col_name + '_encoded'] = test_df[col_name].map(dict)
+
+    # Fill unknowns in Test with Global Mean
+    test_df[col_name + '_encoded'] = test_df[col_name + '_encoded'].fillna(global_mean)
+
+    # Drop the original string column
+    train_df = train_df.drop(columns=[col_name])
+    test_df = test_df.drop(columns=[col_name])
+
+    return train_df, test_df
