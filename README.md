@@ -107,6 +107,6 @@ What I find pretty curious is that class 3 (originally 5 = classical ) is well p
 But as class 3 is not very present, very few other classes are mistaken for class 3.
 We can suppose that the feauture distribution of classical music (3) is very different from other classes. (A small class but easy to detect)
 
-## Task 2: Predict your coarse-grained genre (3–4 categories) (task2.ipynb)
+## Task 2: Predict your coarse-grained genre (3–4 categories) (task_2.ipynb)
 
 ## Task 3: Predict the track duration (task3.ipynb)
