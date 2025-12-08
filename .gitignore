@@ -1,5 +1,6 @@
 data/*
 .venv/
+supervised_env/
 
 # OS files
 .DS_Store
