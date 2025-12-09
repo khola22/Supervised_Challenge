@@ -144,7 +144,12 @@ The exact same thing happened when we tried applying the K-means without the aut
 
 Conclusion : Attempting a model based coarse genre grouping using the existing datasets is not efficient.
 
-To further refine the dataset for a better model based coarse, a pivot was applied on the Echonest dataset in order to have lines representing genres and where features of all tracks corresponding to that genres were grouped and reduces using the median. Next we removed the features with variance less than 0.01 to improve the efficiency of the K-means clustering. The K-means were run many times using 3 or 4 clusters each time, the most relevent clustering is the one we were based on to decide on our final 3 coarse genres :
+To further refine the dataset for a better model based coarse, a pivot was applied on the Echonest dataset in order to have lines representing genres and where features of all tracks corresponding to that genres were grouped and reduces using the median. Next we removed the features with variance less than 0.01 to improve the efficiency of the K-means clustering. 
+
+We then found a good clustering with good inter-class variability for the echonest features:
+![alt text](image.png)
+
+The K-means were run many times using 3 or 4 clusters each time, the most relevent clustering is the one we were based on to decide on our final 3 coarse genres :
 
 c1 = Electronic/Hip-Hop/Pop/Rock/International
 
