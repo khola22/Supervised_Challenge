@@ -174,3 +174,31 @@ The next phased consisted of testing models to predict the right coarse-genre, u
 Conclusion : XGBoost is clearly the better compromise: higher macro‑F1 and much higher accuracy, with reasonably good c2.
 
 ## Task 3: Predict the track duration (task3.ipynb)
+
+**Data Preparation**:  
+- **Categorical Encoding:** Instead of dropping high-cardinality columns, we applied **Target Encoding** (with smoothing) to `artist_name` and `album_title`. This allows the model to learn from the average duration associated with specific artists and albums, preserving critical signal.
+- **Target Transformation:** The target variable, `duration`, was handled for extreme outliers by **clipping** at 600s and then **log-transformed** (`log(1+x)`) to achieve a near-normal distribution for regression stability.
+- **Final Feature Sets:** Two primary feature sets were used for modeling:
+    1.  **Set A (Large):** Metadata (Target Encoded) + Reduced Spectral Features ($\approx 100,000$ tracks).
+    2.  **Set B (Complete/Small):** Metadata(Target Encoded) + Reduced Spectral + **Echonest** features ($\approx 10,000$ tracks).
+
+**Regression models:**  
+The goal is to build the best regression model to predict the log-transformed track duration. We implemented advanced Gradient Boosting methods to handle non-linear relationships and compared them using $\mathbf{R^2}$ score and $\mathbf{MAE}$ (Mean Absolute Error) converted back to seconds.
+
+| Model | Feature Set | Data Size (Tracks) | R² Score | MAE (Seconds) |
+| :--- | :--- | :--- | :--- | :--- |
+| **XGBoost** | **Set A** | $\approx 97,000$ | **0.5247** | **73.87 seconds** |
+| **LightGBM** | **Set A** | $\approx 97,000$ | **0.5245** | **74.05 seconds** |
+| Random Forest | Set A | $\approx 97,000$ | 0.5044 | 74.58 seconds |
+| LightGBM | Set B | $\approx 10,000$ | 0.4186 | 60.32 seconds |
+| XGBoost | Set B | $\approx 10,000$ | 0.4131 | 60.23 seconds |
+| Random Forest | Set B | $\approx 10,000$ | 0.3853 | 61.16 seconds |
+
+
+
+The results indicate a shift in the **Quantity vs. Quality Trade-off** due to better Feature Engineering:
+
+* **Best Overall Performance (Set A) :** The XGBoost and LightGBM models on the full dataset achieved the highest predictive power ($R^2 \approx 0.525$). This confirms that leveraging the full dataset with **Target Encoding** for artists and albums provides significantly more signal than using a smaller subset with specialized features.
+* **The MAE vs. $R^2$ Trade-off:** Interestingly, Set B has a lower Mean Absolute Error (~60s) compared to Set A (~74s), despite having a much worse $R^2$. It is possibly due to the fact that Set A includes a massive variety of tracks, including long mixes and outliers, which increases the total variance and the average error margin. However, the model on Set A captures the trends much better (higher $R^2$), whereas the model on Set B is "safer" (smaller errors) but fails to explain the variance in the data effectively.
+
+* **Conclusion:** The XGBoost and LightGBM models on Set A are chosen as the champion models. The ability to explain >52% of the variance in song duration using only metadata and spectral features is a strong result for this domain.
