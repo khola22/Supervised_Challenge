@@ -173,6 +173,9 @@ The next phased consisted of testing models to predict the right coarse-genre, u
 
 Conclusion : XGBoost is clearly the better compromise: higher macro‑F1 and much higher accuracy, with reasonably good c2.
 
+We then applied the same treatment on the spectral dataset since it contanins nearly 10 times the number of tracks of the echonest one and two more genres , we had very poor results on the clustering methods which we interprete the following way:
+    -Clustering purely on spectral features gives a rough, timbre-based grouping, often separating electronic vs. acoustic music, but it fails to capture rhythm, melody, vocals that define most genres. For a more robust clustering, we chose to stay with the first approach of  combiing spectral and echonest features even if it has less tracksit generalizes better.
+
 ## Task 3: Predict the track duration (task3.ipynb)
 
 **Data Preparation**:  
