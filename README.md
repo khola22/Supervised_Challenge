@@ -147,7 +147,7 @@ Conclusion : Attempting a model based coarse genre grouping using the existing d
 To further refine the dataset for a better model based coarse, a pivot was applied on the Echonest dataset in order to have lines representing genres and where features of all tracks corresponding to that genres were grouped and reduces using the median. Next we removed the features with variance less than 0.01 to improve the efficiency of the K-means clustering. 
 
 We then found a good clustering with good inter-class variability for the echonest features:
-![alt text](image.png)
+https://private-user-images.githubusercontent.com/189213447/524549777-1af36191-1fa9-4b2b-9b35-43723839184c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjUzMTkxNTcsIm5iZiI6MTc2NTMxODg1NywicGF0aCI6Ii8xODkyMTM0NDcvNTI0NTQ5Nzc3LTFhZjM2MTkxLTFmYTktNGIyYi05YjM1LTQzNzIzODM5MTg0Yy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUxMjA5JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MTIwOVQyMjIwNTdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1mNjE0ZjE4Nzc1ZjFmYzk1Y2E2OThkZTYxYTQ2YWZkZTUzNjcxODZhMWM4NWFkZmM0ZTlhNTQxYWZhMmIxYTFmJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.OPEkHnWWE3TvSnqER-BhgxpXI62jB7cnOaNfqe3nYIc
 
 The K-means were run many times using 3 or 4 clusters each time, the most relevent clustering is the one we were based on to decide on our final 3 coarse genres :
 
