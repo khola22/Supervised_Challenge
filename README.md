@@ -109,4 +109,68 @@ We can suppose that the feauture distribution of classical music (3) is very dif
 
 ## Task 2: Predict your coarse-grained genre (3–4 categories) (task_2.ipynb)
 
+# 
+
+In task 2, further feature engineering was applied to build our coarsed genres and supervised prediction of genre_top. the two different merges of datasets are kept to compare the results : 'data/tracks_echonest_titles.tsv’ and 'data/tracks_spectral_titles.tsv’. 
+
+Note : 
+
+- Titles means that the genre top are represented as titles and not ids.
+
+The preprocessing on the existing data is a bit different that the data_prep.ipynb, we chose to :
+
+- Drop the rows (under 3% of data) with missing values in Speechiness, Valence and Danceability
+- Drop artist_longitude an artist_latitude because they are not informative for the prediction and introduce a lot of missing values.
+- Apply PCA on all spectral related features because they are highly correlated given the plot of correlation in the notebook task_2
+- Apply PCA on the popularity related features ['favorites', 'interest', 'listens']
+
+After the steps above, only 5 axis were necessary in the 1st PCA to have nearly 90% of the variance regarding the Spectral Features, and only 1 axis for the Popularity Features. No PCA was applied on the Core Audio Features (['danceability', 'energy', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'duration']) because the correlation is very small.
+
+Spectral Features and Popularity Features were then substituted with their equivalent PCA components in both datasets. Therefore the datasets were reduced to these dimensions : 
+
+- (97288, 12) for the Spectral dataset
+- (10405, 20) for the Echonest dataset
+
+We experimented with embedding on textual data in order to preserve these information on tracks (['artist_name', 'title', 'album_title']) addidng the whole texts in one single string then embedding it using the ranall-MiniLM-L6-v2 Huging Face transformer. Nevertheless the it did not improve performance nor reduce dimensionality as intended : 
+
+- We had +300 dimension after the embeddings
+- The PCA was able to gather slightly above 70% of variance with +100 axis, which is not optimal.
+
+Given these results, we excluded contextual features from further modeling.
+
+In order to define the coarsed genre groups, we tried to apply k-means on our data and see how the model would classify the genres we have, the 1st went through auto-encoding the Core Audio Features in order to diminish the dimension but unfortunately the 3 clusters had all genre_top in all of them + nearly the same repartitions of Core Audio Features, which is provided no meaningful separation .
+
+The exact same thing happened when we tried applying the K-means without the auto-encoding.
+
+Conclusion : Attempting a model based coarse genre grouping using the existing datasets is not efficient.
+
+To further refine the dataset for a better model based coarse, a pivot was applied on the Echonest dataset in order to have lines representing genres and where features of all tracks corresponding to that genres were grouped and reduces using the median. Next we removed the features with variance less than 0.01 to improve the efficiency of the K-means clustering. The K-means were run many times using 3 or 4 clusters each time, the most relevent clustering is the one we were based on to decide on our final 3 coarse genres :
+
+c1 = Electronic/Hip-Hop/Pop/Rock/International
+
+c2 = Jazz/Blues/Instrumental/Easy Listening
+
+c3 = Classical/Folk/Experimental
+
+Note : *A lot of dataset treatments are only done on the Echonest dataset and that is because it is the dataset with all of the features, it indeed reduce Top Genre diversity, but we well adress that later.*
+
+Note : *Other missing Top Genres will be added when applying the preprocessing and coarse on the Spectral Dataset.*
+
+The next phased consisted of testing models to predict the right coarse-genre, using a proportion of 0.2 for testing, the ML models used are :
+
+- Extreme Gradient Boosting (*XGBoost models*):
+    
+    The 1st training/testing gave us an accuracy of 0.85, which is good, but the recall on cluster c2 was very low, notably because it is the cluster the least represented in the datasets (+10 times less than c1 and 2 times less than c3). In order to address this issue we set weights for the classes, the best recall, accuracy and F1 error combination was for this weight setting : class_weights = {c1: 1.0, c2: 10, c3: 1.5}
+    
+- Random Forests :
+    
+    We kept the same distribution of weights as for XGBoosting in all the other models, the accuracy is the same but this technique proved insufficiency predicting c2 class (recall of 0.09)
+    
+- Logistic Regression
+    
+    LogReg is too aggressive on c2, many false positives, hurting overall performance and c3 badly. 
+    
+
+Conclusion : XGBoost is clearly the better compromise: higher macro‑F1 and much higher accuracy, with reasonably good c2.
+
 ## Task 3: Predict the track duration (task3.ipynb)
